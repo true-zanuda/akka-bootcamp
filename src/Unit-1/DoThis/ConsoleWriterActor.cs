@@ -1,5 +1,5 @@
-﻿using System;
-using Akka.Actor;
+﻿using Akka.Actor;
+using System;
 
 namespace WinTail
 {
@@ -9,12 +9,12 @@ namespace WinTail
     /// </summary>
     class ConsoleWriterActor : UntypedActor
     {
-        protected override void OnReceive(object message)
+        protected override void OnReceive(Object message)
         {
-            var msg = message as string;
+            var msg = message as String;
 
             // make sure we got a message
-            if (string.IsNullOrEmpty(msg))
+            if (String.IsNullOrEmpty(msg))
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine("Please provide an input.\n");
@@ -29,7 +29,6 @@ namespace WinTail
             Console.ForegroundColor = color;
             Console.WriteLine(alert);
             Console.ResetColor();
-
         }
     }
 }

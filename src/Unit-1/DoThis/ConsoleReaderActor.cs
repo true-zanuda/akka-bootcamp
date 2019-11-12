@@ -1,5 +1,5 @@
-using System;
 using Akka.Actor;
+using System;
 
 namespace WinTail
 {
@@ -9,31 +9,26 @@ namespace WinTail
     /// </summary>
     class ConsoleReaderActor : UntypedActor
     {
-        public const string ExitCommand = "exit";
-        private IActorRef _consoleWriterActor;
+        public const String ExitCommand = "exit";
+        private readonly IActorRef _consoleWriterActor;
 
         public ConsoleReaderActor(IActorRef consoleWriterActor)
         {
             _consoleWriterActor = consoleWriterActor;
         }
 
-        protected override void OnReceive(object message)
+        protected override void OnReceive(Object message)
         {
             var read = Console.ReadLine();
-            if (!string.IsNullOrEmpty(read) && String.Equals(read, ExitCommand, StringComparison.OrdinalIgnoreCase))
+            if (!String.IsNullOrEmpty(read) && String.Equals(read, ExitCommand, StringComparison.OrdinalIgnoreCase))
             {
-                // shut down the system (acquire handle to system via
-                // this actors context)
                 Context.System.Terminate();
                 return;
             }
 
-            // send input to the console writer to process and print
-            // YOU NEED TO FILL IN HERE
+            _consoleWriterActor.Tell(read);
 
-            // continue reading messages from the console
-            // YOU NEED TO FILL IN HERE
+            Self.Tell("continue");
         }
-
     }
 }
