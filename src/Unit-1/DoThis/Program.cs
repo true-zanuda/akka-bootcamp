@@ -11,10 +11,13 @@ namespace WinTail
         {
             MyActorSystem = ActorSystem.Create("ActorSystem");
 
+            var coordinatorProps = Props.Create(() => new TailCoordinatorActor());
+            var coordinator = MyActorSystem.ActorOf(coordinatorProps, "coordinator");
+
             var writerProps = Props.Create<ConsoleWriterActor>();
             var writer = MyActorSystem.ActorOf(writerProps, "consoleWriterActor");
 
-            var validatorProps = Props.Create(() => new ValidationActor(writer));
+            var validatorProps = Props.Create(() => new FileValidatorActor(writer, coordinator));
             var validator = MyActorSystem.ActorOf(validatorProps, "validator");
 
             var readerProps = Props.Create<ConsoleReaderActor>(validator);
