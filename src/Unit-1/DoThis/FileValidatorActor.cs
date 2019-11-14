@@ -1,4 +1,5 @@
 ﻿using Akka.Actor;
+using System;
 using System.IO;
 
 namespace WinTail
@@ -8,16 +9,15 @@ namespace WinTail
     /// </summary>
     public class FileValidatorActor : UntypedActor
     {
-        public FileValidatorActor(IActorRef consoleWriterActor, IActorRef tailCoordinatorActor)
+        public FileValidatorActor(IActorRef consoleWriterActor)
         {
             _consoleWriterActor = consoleWriterActor;
-            _tailCoordinatorActor = tailCoordinatorActor;
         }
 
-        protected override void OnReceive(System.Object message)
+        protected override void OnReceive(Object message)
         {
-            var msg = message as System.String;
-            if (System.String.IsNullOrEmpty(msg))
+            var msg = message as String;
+            if (String.IsNullOrEmpty(msg))
             {
                 // signal that the user needs to supply an input
                 _consoleWriterActor.Tell(new Messages.NullInputError("Input was blank. Please try again.\n"));
@@ -31,15 +31,16 @@ namespace WinTail
                 if (valid)
                 {
                     // signal successful input
-                    _consoleWriterActor.Tell(new Messages.InputSuccess(System.String.Format("Starting processing for {0}", msg)));
+                    _consoleWriterActor.Tell(new Messages.InputSuccess(String.Format("Starting processing for {0}", msg)));
 
                     // start coordinator
-                    _tailCoordinatorActor.Tell(new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
+                    var coordinator = Context.ActorSelection("akka://ActorSystem/user/coordinator");
+                    coordinator.Tell(new TailCoordinatorActor.StartTail(msg, _consoleWriterActor));
                 }
                 else
                 {
                     // signal that input was bad
-                    _consoleWriterActor.Tell(new Messages.ValidationError(System.String.Format("{0} is not an existing URI on disk.", msg)));
+                    _consoleWriterActor.Tell(new Messages.ValidationError(String.Format("{0} is not an existing URI on disk.", msg)));
 
                     // tell sender to continue doing its thing (whatever that may be, this actor doesn't care)
                     Sender.Tell(new Messages.ContinueProcessing());
@@ -48,14 +49,13 @@ namespace WinTail
         }
 
         private readonly IActorRef _consoleWriterActor;
-        private readonly IActorRef _tailCoordinatorActor;
 
         /// <summary>
         /// Checks if file exists at path provided by user.
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        private static System.Boolean IsFileUri(System.String path)
+        private static Boolean IsFileUri(String path)
         {
             return File.Exists(path);
         }
